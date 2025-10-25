@@ -1,0 +1,173 @@
+{
+  "info": {
+    "_postman_id": "random-uuid",
+    "name": "Gate Pass System",
+    "description": "Collection for Gate Pass System API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"student1\",\n    \"password\": \"pass123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "login"]
+            },
+            "description": "Login with username and password"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Passes",
+      "item": [
+        {
+          "name": "Get All Passes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/passes",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "passes"]
+            },
+            "description": "Get all gate passes"
+          }
+        },
+        {
+          "name": "Create Pass Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"studentId\": \"1\",\n    \"studentName\": \"Rahul Kumar\",\n    \"reason\": \"Medical appointment\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/passes",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "passes"]
+            },
+            "description": "Create a new pass request"
+          }
+        },
+        {
+          "name": "Get Student's Passes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/passes/student/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "passes", "student", "1"]
+            },
+            "description": "Get passes for a specific student"
+          }
+        },
+        {
+          "name": "Get Pass by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/passes/:passId",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "passes", ":passId"],
+              "variable": [
+                {
+                  "key": "passId",
+                  "value": "",
+                  "description": "ID of the pass to retrieve"
+                }
+              ]
+            },
+            "description": "Get a specific pass by ID"
+          }
+        },
+        {
+          "name": "Update Pass Status (Moderator)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"status\": \"approved\",\n    \"moderatorRemarks\": \"Permission granted\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/passes/:passId",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "passes", ":passId"],
+              "variable": [
+                {
+                  "key": "passId",
+                  "value": "",
+                  "description": "ID of the pass to update"
+                }
+              ]
+            },
+            "description": "Update pass status by moderator"
+          }
+        },
+        {
+          "name": "Mark Pass as Used (Gatekeeper)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/passes/:passId/use",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "passes", ":passId", "use"],
+              "variable": [
+                {
+                  "key": "passId",
+                  "value": "",
+                  "description": "ID of the pass to mark as used"
+                }
+              ]
+            },
+            "description": "Mark a pass as used by gatekeeper"
+          }
+        }
+      ]
+    }
+  ]
+}

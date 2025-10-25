@@ -1,0 +1,54 @@
+{
+  "users": [
+    {
+      "id": "2",
+      "username": "mod1",
+      "password": "pass123",
+      "role": "moderator",
+      "name": "Dr. Sharma"
+    },
+    {
+      "id": "3",
+      "username": "gate1",
+      "password": "pass123",
+      "role": "gatekeeper",
+      "name": "Security Officer"
+    },
+    {
+      "id": "4",
+      "username": "admin1",
+      "password": "pass123",
+      "role": "admin",
+      "name": "System Administrator"
+    },
+    {
+      "id": "17613583352058sfqf0hx6",
+      "username": "548",
+      "password": "123654",
+      "role": "student",
+      "name": "ajay kumar",
+      "studentId": "548",
+      "email": "gwajay73@gmail.com",
+      "phone": "8639736123",
+      "course": "B.Tech",
+      "year": "2025",
+      "registeredAt": "2025-10-25T02:12:15.205Z"
+    }
+  ],
+  "passes": [
+    {
+      "id": "1761358639701mljh7iu8j",
+      "studentId": "17613583352058sfqf0hx6",
+      "studentName": "ajay kumar",
+      "reason": "house",
+      "category": "home",
+      "returnTime": null,
+      "notes": "",
+      "status": "pending",
+      "moderatorRemarks": "",
+      "requestedAt": "2025-10-25T02:17:19.701Z",
+      "approvedAt": null,
+      "usedAt": null
+    }
+  ]
+}

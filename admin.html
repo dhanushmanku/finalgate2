@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Gate Pass System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/color/48/000000/security-pass.png">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="logout-btn" onclick="logout()">Logout</button>
+            <h1>Admin Panel</h1>
+            <p id="welcome-text">System Administration</p>
+        </div>
+
+        <!-- System Overview -->
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-number" id="total-users">0</div>
+                <div class="stat-label">Total Users</div>
+                <div class="stat-change positive">Active users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-id-card"></i>
+                </div>
+                <div class="stat-number" id="total-passes">0</div>
+                <div class="stat-label">Total Passes</div>
+                <div class="stat-change positive">All time</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-number" id="pending-passes">0</div>
+                <div class="stat-label">Pending</div>
+                <div class="stat-change">Awaiting approval</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <div class="stat-number" id="today-passes">0</div>
+                <div class="stat-label">Today</div>
+                <div class="stat-change positive">New requests</div>
+            </div>
+        </div>
+
+        <!-- Admin Functions -->
+        <div class="admin-grid">
+            <div class="admin-card">
+                <h4><i class="fas fa-user-plus"></i> User Management</h4>
+                <p>Add, edit, or remove users from the system</p>
+                <button class="btn-primary" onclick="openUserManagement()">Manage Users</button>
+            </div>
+            
+            <div class="admin-card">
+                <h4><i class="fas fa-chart-bar"></i> Analytics & Reports</h4>
+                <p>View detailed analytics and generate reports</p>
+                <button class="btn-primary" onclick="openAnalytics()">View Analytics</button>
+            </div>
+            
+            <div class="admin-card">
+                <h4><i class="fas fa-cog"></i> System Settings</h4>
+                <p>Configure system parameters and preferences</p>
+                <button class="btn-primary" onclick="openSettings()">Settings</button>
+            </div>
+            
+            <div class="admin-card">
+                <h4><i class="fas fa-database"></i> Data Management</h4>
+                <p>Backup, restore, and manage system data</p>
+                <button class="btn-primary" onclick="openDataManagement()">Data Tools</button>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+            <h3>Recent System Activity</h3>
+            <div class="table-container">
+                <table id="activity-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activity-body">
+                        <tr>
+                            <td colspan="4" style="text-align: center;">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- All Passes Overview -->
+        <div class="card">
+            <h3>All Pass Requests</h3>
+            <div class="export-buttons">
+                <button class="export-btn" onclick="exportAllPasses()">
+                    <i class="fas fa-download"></i> Export All
+                </button>
+                <button class="export-btn" onclick="generateReport()">
+                    <i class="fas fa-chart-line"></i> Generate Report
+                </button>
+            </div>
+            <div class="table-container">
+                <table id="all-passes-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Student</th>
+                            <th>Category</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Moderator</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="all-passes-body">
+                        <tr>
+                            <td colspan="7" style="text-align: center;">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Management Modal -->
+    <div id="user-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+            <h3 style="color: #8f191d; margin-bottom: 20px;">User Management</h3>
+            <div id="user-management-content">
+                <!-- User management content will be loaded here -->
+            </div>
+            <button onclick="closeUserModal()" class="btn" style="margin-top: 20px;">Close</button>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        const API_URL = 'http://localhost:3000';
+        let currentUser = null;
+
+        function checkAuth() {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                window.location.href = 'login.html';
+                return null;
+            }
+            currentUser = JSON.parse(userStr);
+            if (currentUser.role !== 'admin') {
+                window.location.href = 'login.html';
+                return null;
+            }
+            document.getElementById('welcome-text').textContent = `Welcome, ${currentUser.name}`;
+            return currentUser;
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        // Load system statistics
+        async function loadSystemStats() {
+            try {
+                const response = await fetch(`${API_URL}/api/passes`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const passes = data.passes;
+                    const totalPasses = passes.length;
+                    const pendingPasses = passes.filter(p => p.status === 'pending').length;
+                    
+                    // Today's passes
+                    const today = new Date().toISOString().split('T')[0];
+                    const todayPasses = passes.filter(p => p.requestedAt.startsWith(today)).length;
+                    
+                    document.getElementById('total-passes').textContent = totalPasses;
+                    document.getElementById('pending-passes').textContent = pendingPasses;
+                    document.getElementById('today-passes').textContent = todayPasses;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Load recent activity
+        async function loadRecentActivity() {
+            try {
+                const response = await fetch(`${API_URL}/api/passes`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const recentPasses = data.passes
+                        .sort((a, b) => new Date(b.requestedAt) - new Date(a.requestedAt))
+                        .slice(0, 10);
+                    
+                    const activityBody = document.getElementById('activity-body');
+                    activityBody.innerHTML = recentPasses.map(pass => `
+                        <tr>
+                            <td>${new Date(pass.requestedAt).toLocaleString()}</td>
+                            <td>${pass.studentName}</td>
+                            <td>${pass.status === 'pending' ? 'Requested' : pass.status === 'approved' ? 'Approved' : 'Rejected'} Pass</td>
+                            <td>${pass.reason}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading activity:', error);
+            }
+        }
+
+        // Load all passes
+        async function loadAllPasses() {
+            try {
+                const response = await fetch(`${API_URL}/api/passes`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const allPassesBody = document.getElementById('all-passes-body');
+                    allPassesBody.innerHTML = data.passes.map(pass => `
+                        <tr>
+                            <td>${new Date(pass.requestedAt).toLocaleString()}</td>
+                            <td>${pass.studentName}</td>
+                            <td>${pass.category || 'General'}</td>
+                            <td>${pass.reason}</td>
+                            <td><span class="status ${pass.status}">${pass.status.toUpperCase()}</span></td>
+                            <td>${pass.moderatorRemarks || '-'}</td>
+                            <td>
+                                <button class="btn" onclick="viewPassDetails('${pass.id}')">View</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading passes:', error);
+            }
+        }
+
+        // Admin functions
+        function openUserManagement() {
+            document.getElementById('user-modal').style.display = 'block';
+            loadUserManagement();
+        }
+
+        function closeUserModal() {
+            document.getElementById('user-modal').style.display = 'none';
+        }
+
+        async function loadUserManagement() {
+            // This would load user management interface
+            document.getElementById('user-management-content').innerHTML = `
+                <p>User management functionality would be implemented here.</p>
+                <p>Features would include:</p>
+                <ul>
+                    <li>Add new users</li>
+                    <li>Edit user details</li>
+                    <li>Deactivate users</li>
+                    <li>Reset passwords</li>
+                    <li>Assign roles</li>
+                </ul>
+            `;
+        }
+
+        function openAnalytics() {
+            alert('Analytics dashboard would open here with charts and detailed reports.');
+        }
+
+        function openSettings() {
+            alert('System settings panel would open here.');
+        }
+
+        function openDataManagement() {
+            alert('Data management tools would open here.');
+        }
+
+        function exportAllPasses() {
+            alert('Exporting all passes to CSV...');
+        }
+
+        function generateReport() {
+            alert('Generating comprehensive report...');
+        }
+
+        function viewPassDetails(passId) {
+            alert(`Viewing details for pass: ${passId}`);
+        }
+
+        // Initialize
+        if (checkAuth()) {
+            loadSystemStats();
+            loadRecentActivity();
+            loadAllPasses();
+            setInterval(loadSystemStats, 30000);
+            setInterval(loadRecentActivity, 10000);
+        }
+    </script>
+</body>
+</html>

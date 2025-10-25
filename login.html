@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Secure college gate pass management system">
+    <title>Login - Gate Pass System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/color/48/000000/security-pass.png"></head>
+<body>
+    <div class="login-container">
+        <div class="login-box fade-in">
+            <div class="login-logo">
+                <i class="fas fa-id-card"></i>
+            </div>
+            <h2>Gate Pass System</h2>
+            <p class="subtitle">College Access Management</p>
+            
+            <div id="error-message" class="error-message"></div>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <div class="input-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="username" required placeholder="Enter your username" autocomplete="username">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" required placeholder="Enter your password" autocomplete="current-password">
+                        <button type="button" class="toggle-password" aria-label="Toggle password visibility">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Login</span>
+                </button>
+            </form>
+            
+            <div class="demo-credentials">
+                <div class="demo-header">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Staff Login Credentials</span>
+                </div>
+                <div class="demo-users">
+                    <div class="demo-user">
+                        <i class="fas fa-user-tie"></i>
+                        <div>
+                            <strong>Moderator</strong>
+                            <span>mod1 / pass123</span>
+                        </div>
+                    </div>
+                    <div class="demo-user">
+                        <i class="fas fa-user-shield"></i>
+                        <div>
+                            <strong>Gatekeeper</strong>
+                            <span>gate1 / pass123</span>
+                        </div>
+                    </div>
+                    <div class="demo-user">
+                        <i class="fas fa-user-cog"></i>
+                        <div>
+                            <strong>Admin</strong>
+                            <span>admin1 / pass123</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="login-footer">
+            <p>New student? <a href="register.html" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Register here</a></p>
+            <p>&copy; 2025 Gate Pass System. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        // Wait for APP to be loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ensure APP is loaded
+            if (typeof APP === 'undefined') {
+                console.error('APP object not loaded. Please refresh the page.');
+                return;
+            }
+        // Initialize password toggle
+        document.querySelector('.toggle-password').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            APP.LoadingState.show(submitBtn);
+            
+            try {
+                const data = await APP.ApiClient.request('/api/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ username, password })
+                });
+                
+                APP.Auth.setUser(data.user);
+                
+                // Smooth transition
+                document.body.style.opacity = '0';
+                setTimeout(() => {
+                    // Redirect based on role
+                    const rolePages = {
+                        student: 'student.html',
+                        moderator: 'moderator.html',
+                        gatekeeper: 'gatekeeper.html',
+                        admin: 'admin.html'
+                    };
+                    
+                    window.location.href = rolePages[data.user.role] || 'login.html';
+                }, 300);
+                
+            } catch (error) {
+                APP.LoadingState.hide(submitBtn);
+            }
+        });
+
+        // Add input animations
+        document.querySelectorAll('.form-group input').forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', () => {
+                if (!input.value) {
+                    input.parentElement.classList.remove('focused');
+                }
+            });
+        });
+
+            // Initialize
+            window.addEventListener('load', () => {
+                document.body.classList.add('loaded');
+            });
+        });
+    </script>
+</body>
+</html>

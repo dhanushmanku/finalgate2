@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gate Pass System</title>
+    <script>
+        // Check if user is already logged in
+        const user = localStorage.getItem('user');
+        if (user) {
+            const userData = JSON.parse(user);
+            const rolePages = {
+                student: 'student.html',
+                moderator: 'moderator.html',
+                gatekeeper: 'gatekeeper.html',
+                admin: 'admin.html'
+            };
+            window.location.href = rolePages[userData.role] || 'login.html';
+        } else {
+            window.location.href = 'login.html';
+        }
+    </script>
+</head>
+<body>
+    <p>Redirecting to login...</p>
+</body>
+</html>

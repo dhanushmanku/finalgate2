@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moderator Dashboard - Gate Pass System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/color/48/000000/security-pass.png">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="logout-btn" onclick="logout()">Logout</button>
+            <h1>Moderator Dashboard</h1>
+            <p id="welcome-text">Welcome</p>
+        </div>
+
+        <div class="card">
+            <h3>Pending Pass Requests</h3>
+            <div id="success-message" class="success-message"></div>
+            <div class="table-container">
+                <table id="pending-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Student Name</th>
+                            <th>Reason</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pending-body">
+                        <tr>
+                            <td colspan="4" style="text-align: center;">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>All Pass Requests History</h3>
+            <div class="table-container">
+                <table id="all-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Student Name</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="all-body">
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="action-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%;">
+            <h3 style="color: #8f191d; margin-bottom: 20px;">Review Pass Request</h3>
+            
+            <div style="background: #f5f5dc; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <p><strong style="color: #03505d;">Student:</strong> <span id="modal-student"></span></p>
+                <p><strong style="color: #03505d;">Reason:</strong> <span id="modal-reason"></span></p>
+                <p><strong style="color: #03505d;">Requested:</strong> <span id="modal-date"></span></p>
+            </div>
+            
+            <div class="form-group">
+                <label>Remarks (Optional)</label>
+                <input type="text" id="remarks-input" placeholder="Add any comments or instructions">
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button onclick="handleApprove()" class="btn btn-approve" style="flex: 1;">Approve</button>
+                <button onclick="handleReject()" class="btn btn-reject" style="flex: 1;">Reject</button>
+                <button onclick="closeModal()" class="btn" style="background: #999; color: white;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        let selectedPassId = null;
+
+        const user = APP.Auth.checkAuth(['moderator']);
+        if (user) {
+            document.getElementById('welcome-text').textContent = `Welcome, ${user.name}`;
+        }
+
+        function logout() {
+            APP.Auth.logout();
+        }
+
+        async function loadPasses() {
+            try {
+                const data = await APP.ApiClient.request('/api/passes');
+                
+                const pendingPasses = data.passes.filter(p => p.status === 'pending');
+                const pendingBody = document.getElementById('pending-body');
+                
+                if (pendingPasses.length > 0) {
+                    pendingBody.innerHTML = pendingPasses.map(pass => `
+                        <tr>
+                            <td>${APP.DateFormatter.format(pass.requestedAt)}</td>
+                            <td>${pass.studentName}</td>
+                            <td>${pass.reason}</td>
+                            <td>
+                                <button class="btn btn-approve" onclick="openModal('${pass.id}', '${pass.studentName}', '${pass.reason}', '${pass.requestedAt}')">
+                                    <i class="fas fa-check-circle"></i> Review
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    pendingBody.innerHTML = '<tr><td colspan="4" style="text-align: center;"><i class="fas fa-check"></i> No pending requests</td></tr>';
+                }
+                
+                const allBody = document.getElementById('all-body');
+                if (data.passes.length > 0) {
+                    allBody.innerHTML = data.passes.map(pass => `
+                        <tr>
+                            <td>${APP.DateFormatter.format(pass.requestedAt)}</td>
+                            <td>${pass.studentName}</td>
+                            <td>${pass.reason}</td>
+                            <td><span class="status ${pass.status}">${pass.status.toUpperCase()}</span></td>
+                            <td>${pass.moderatorRemarks || '-'}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    allBody.innerHTML = '<tr><td colspan="5" style="text-align: center;"><i class="fas fa-info-circle"></i> No requests yet</td></tr>';
+                }
+            } catch (error) {
+                APP.Toast.show('Error loading passes. Please try again.', 'error');
+            }
+        }
+
+        function openModal(passId, studentName, reason, requestedAt) {
+            selectedPassId = passId;
+            document.getElementById('modal-student').textContent = studentName;
+            document.getElementById('modal-reason').textContent = reason;
+            document.getElementById('modal-date').textContent = new Date(requestedAt).toLocaleString();
+            document.getElementById('remarks-input').value = '';
+            document.getElementById('action-modal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('action-modal').style.display = 'none';
+            selectedPassId = null;
+        }
+
+        async function handleApprove() {
+            await updatePassStatus('approved');
+        }
+
+        async function handleReject() {
+            await updatePassStatus('rejected');
+        }
+
+        async function updatePassStatus(status) {
+            const remarks = document.getElementById('remarks-input').value;
+            // choose the correct button class for loading state
+            const btnClass = status === 'approved' ? 'btn-approve' : 'btn-reject';
+            const actionBtn = document.querySelector(`button.${btnClass}`);
+
+            try {
+                if (actionBtn) APP.LoadingState.show(actionBtn);
+
+                await APP.ApiClient.request(`/api/passes/${selectedPassId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status, moderatorRemarks: remarks })
+                });
+
+                APP.Toast.show(`Pass ${status} successfully!`);
+                closeModal();
+                loadPasses();
+            } catch (error) {
+                APP.Toast.show('Error updating pass status', 'error');
+            } finally {
+                if (actionBtn) APP.LoadingState.hide(actionBtn);
+            }
+        }
+
+        // Initialize
+        if (APP.Auth.checkAuth(['moderator'])) {
+            // Initial load
+            loadPasses();
+            
+            // Auto refresh
+            setInterval(loadPasses, APP.config.AUTO_REFRESH_INTERVAL);
+            
+            // Add fade-in animation to containers
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.add('fade-in');
+            });
+        }
+    </script>
+</body>
+</html>

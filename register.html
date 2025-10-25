@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Student Registration - Gate Pass System">
+    <title>Student Registration - Gate Pass System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/color/48/000000/security-pass.png">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box fade-in">
+            <div class="login-logo">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h2>Student Registration</h2>
+            <p class="subtitle">Create your account to request gate passes</p>
+            
+            <div id="success-message" class="success-message"></div>
+            <div id="error-message" class="error-message"></div>
+            
+            <form id="registration-form">
+                <div class="form-group">
+                    <div class="input-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="fullName" required placeholder="Enter your full name" autocomplete="name">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-icon">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" id="studentId" required placeholder="Enter your student ID" autocomplete="username">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-icon">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" required placeholder="Enter your email" autocomplete="email">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-icon">
+                        <i class="fas fa-phone"></i>
+                        <input type="tel" id="phone" required placeholder="Enter your phone number" autocomplete="tel">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                        <select id="course" required>
+                            <option value="">Select your course</option>
+                            <option value="B.Tech">B.Tech</option>
+                            <option value="M.Tech">M.Tech</option>
+                            <option value="BBA">BBA</option>
+                            <option value="MBA">MBA</option>
+                            <option value="BCA">BCA</option>
+                            <option value="MCA">MCA</option>
+                            <option value="B.Sc">B.Sc</option>
+                            <option value="M.Sc">M.Sc</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-icon">
+                        <i class="fas fa-calendar"></i>
+                        <input type="text" id="year" required placeholder="Enter your academic year (e.g., 2024)" autocomplete="off">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" required placeholder="Create a password" autocomplete="new-password">
+                        <button type="button" class="toggle-password" aria-label="Toggle password visibility">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="confirmPassword" required placeholder="Confirm your password" autocomplete="new-password">
+                        <button type="button" class="toggle-password" aria-label="Toggle password visibility">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Register as Student</span>
+                </button>
+            </form>
+            
+            <div class="login-footer">
+                <p>Already have an account? <a href="login.html" style="color: var(--primary-color); text-decoration: none;">Login here</a></p>
+                <p>&copy; 2025 Gate Pass System. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        // Wait for APP to be loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ensure APP is loaded
+            if (typeof APP === 'undefined') {
+                console.error('APP object not loaded. Please refresh the page.');
+                return;
+            }
+
+            // Initialize password toggle
+            document.querySelectorAll('.toggle-password').forEach(button => {
+                button.addEventListener('click', function() {
+                    const input = this.parentElement.querySelector('input');
+                    const icon = this.querySelector('i');
+                    
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    }
+                });
+            });
+
+            // Handle form submission
+            document.getElementById('registration-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const form = e.target;
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const successDiv = document.getElementById('success-message');
+                const errorDiv = document.getElementById('error-message');
+                
+                // Get form data
+                const fullName = document.getElementById('fullName').value;
+                const studentId = document.getElementById('studentId').value;
+                const email = document.getElementById('email').value;
+                const phone = document.getElementById('phone').value;
+                const course = document.getElementById('course').value;
+                const year = document.getElementById('year').value;
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                // Validation
+                if (password !== confirmPassword) {
+                    errorDiv.textContent = 'Passwords do not match';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    errorDiv.textContent = 'Password must be at least 6 characters long';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                
+                APP.LoadingState.show(submitBtn);
+                
+                try {
+                    const data = await APP.ApiClient.request('/api/register', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            fullName,
+                            studentId,
+                            email,
+                            phone,
+                            course,
+                            year,
+                            password
+                        })
+                    });
+                    
+                    if (data.success) {
+                        successDiv.textContent = 'Registration successful! You can now login with your credentials.';
+                        successDiv.style.display = 'block';
+                        errorDiv.style.display = 'none';
+                        
+                        // Clear form
+                        form.reset();
+                        
+                        // Redirect to login after 3 seconds
+                        setTimeout(() => {
+                            window.location.href = 'login.html';
+                        }, 3000);
+                    }
+                    
+                } catch (error) {
+                    APP.LoadingState.hide(submitBtn);
+                }
+            });
+
+            // Add input animations
+            document.querySelectorAll('.form-group input, .form-group select').forEach(input => {
+                input.addEventListener('focus', () => {
+                    input.parentElement.classList.add('focused');
+                });
+                
+                input.addEventListener('blur', () => {
+                    if (!input.value) {
+                        input.parentElement.classList.remove('focused');
+                    }
+                });
+            });
+
+            // Initialize
+            window.addEventListener('load', () => {
+                document.body.classList.add('loaded');
+            });
+        });
+    </script>
+</body>
+</html>
